@@ -90,11 +90,14 @@ void getData::intDirc(){
   this->iv.ips->at(this->iv.ipx).s_a_eth[0] = '\0';
   //ARP dst MAC
   this->iv.ips->at(this->iv.ipx).d_a_eth[0] = '\0';
-  //WHOAMI search
-  this->iv.ips->at(this->iv.ipx).dns_name[0] = '\0';
-
-  //WHOAMI search
-  this->iv.ips->at(this->iv.ipx).dns_name[0] = '\0';
+  //DNS search
+  this->iv.ips->at(this->iv.ipx).dns_name_s[0] = '\0';
+  //Whois search
+  this->iv.ips->at(this->iv.ipx).wai_srch_s[0] = '\0';
+  //DNS search
+  this->iv.ips->at(this->iv.ipx).dns_name_d[0] = '\0';
+  //Whois search
+  this->iv.ips->at(this->iv.ipx).wai_srch_d[0] = '\0';
 }
 
 void getData::getInfo(char *in, bool d, char btv){
@@ -103,15 +106,19 @@ void getData::getInfo(char *in, bool d, char btv){
       strcpy(this->iv.ips->at(this->iv.ipx).proto, in);
       break;
     case 1://src
-      if(in[0] > 0) this->iv.ips->at(this->iv.ipx).ip_v = 0;
-      strcpy(this->iv.ips->at(this->iv.ipx).src, in);
+      if(in[0] > 0){
+        this->iv.ips->at(this->iv.ipx).ip_v = 0;
+        strcpy(this->iv.ips->at(this->iv.ipx).src, in);
+        this->ipQuery(this->iv.ips->at(i).src, 0);
+      }
       break;
     case 2://dst
       strcpy(this->iv.ips->at(this->iv.ipx).dst, in);
+      if(in[0] > 0)this->ipQuery(this->iv.ips->at(i).dst, 1);
       break;
     case 3://s_port
       if((int)in[0] > 0) this->iv.ips->at(this->iv.ipx).tu = 0;
-      strcpy(this->iv.ips->at(this->iv.ipx).s_port, in);
+        strcpy(this->iv.ips->at(this->iv.ipx).s_port, in);
       break;
     case 4://d_port
       strcpy(this->iv.ips->at(this->iv.ipx).d_port, in);
@@ -136,9 +143,13 @@ void getData::getInfo(char *in, bool d, char btv){
       break;
     case 11://src_6
       strcpy(this->iv.ips->at(this->iv.ipx).src_6, in);
+      if(in[0] > 0)this->ipQuery(this->iv.ips->at(i).src_6, 0);
+
       break;
     case 12://dst_6
       strcpy(this->iv.ips->at(this->iv.ipx).dst_6, in);
+      if(in[0] > 0)this->ipQuery(this->iv.ips->at(i).dst_6, 1);
+
       break;
     case 13://u_s_port
       strcpy(this->iv.ips->at(this->iv.ipx).u_s_port, in);
@@ -154,11 +165,15 @@ void getData::getInfo(char *in, bool d, char btv){
       strcpy(this->iv.ips->at(this->iv.ipx).rdns, in);
       break;
     case 16://a_src
-      if(in[0] > 0) this->iv.ips->at(this->iv.ipx).ia[0] = 1;
-      strcpy(this->iv.ips->at(this->iv.ipx).a_src, in);
+      if(in[0] > 0){
+        this->iv.ips->at(this->iv.ipx).ia[0] = 1;
+        strcpy(this->iv.ips->at(this->iv.ipx).a_src, in);
+        if(in[0] > 0)this->ipQuery(this->iv.ips->at(i).a_dst, 0);
+      }
       break;
     case 17://a_dst
       strcpy(this->iv.ips->at(this->iv.ipx).a_dst, in);
+      if(in[0] > 0)this->ipQuery(this->iv.ips->at(i).a_dst, 1);
       break;
     case 18://s_a_eth
       strcpy(this->iv.ips->at(this->iv.ipx).s_a_eth, in);
@@ -168,9 +183,11 @@ void getData::getInfo(char *in, bool d, char btv){
       break;
     case 20:
       strcpy(this->iv.ips->at(this->iv.ipx).i_src_6, in);
+      if(in[0] > 0)this->ipQuery(this->iv.ips->at(i).dst, 1);
       break;
     case 21:
       strcpy(this->iv.ips->at(this->iv.ipx).i_dst_6, in);
+      if(in[0] > 0)this->ipQuery(this->iv.ips->at(i).dst, 1);
       break;
     }
 }
@@ -196,12 +213,52 @@ void getData::printInfo(){
     if(this->iv.ips->at(i).ia[0]){
       std::printf(" %s ", (this->iv.ips->at(i).ia[0]?(this->iv.ips->at(i).ia[1]?this->iv.ips->at(i).s_a_eth:this->iv.ips->at(i).i_src_6):(this->iv.ips->at(i).ip_v?this->iv.ips->at(i).src_6:this->iv.ips->at(i).src)));
     } else std::printf(" %s\t[%s]", ((!strcmp(this->H->IPv4, this->iv.ips->at(i).src)||!strcmp(this->H->IPv6, this->iv.ips->at(i).src_6))?(char *)"[HOST]":(this->iv.ips->at(i).ia[0]?(this->iv.ips->at(i).ia[1]?this->iv.ips->at(i).s_a_eth:this->iv.ips->at(i).i_src_6):(this->iv.ips->at(i).ip_v?this->iv.ips->at(i).src_6:this->iv.ips->at(i).src))), (this->iv.ips->at(i).tu?this->iv.ips->at(i).u_s_port:this->iv.ips->at(i).s_port));
+    if(!(!strcmp(this->H->IPv4, this->iv.ips->at(i).src)||!strcmp(this->H->IPv6, this->iv.ips->at(i).src_6)))
+      this->ipQuery(this->iv.ips->at(i).src, 0);
     std::printf("={%s}>", this->iv.ips->at(i).proto, this->iv.ips->at(i).dst, this->iv.ips->at(i).dst_6, this->iv.ips->at(i).d_port, this->iv.ips->at(i).u_d_port);
     if(this->iv.ips->at(i).ia[0] && this->iv.ips->at(i).ia[1]) std::printf("BROADCAST\n");
     else  std::printf(" %s[%s]", (this->iv.ips->at(i).ia[0]?(this->iv.ips->at(i).ia[1]?(this->iv.ips->at(i).ip_v?this->iv.ips->at(i).dst_6:this->iv.ips->at(i).dst):this->iv.ips->at(i).i_dst_6):(this->iv.ips->at(i).ip_v?this->iv.ips->at(i).dst_6:this->iv.ips->at(i).dst)), (this->iv.ips->at(i).tu?this->iv.ips->at(i).u_d_port:this->iv.ips->at(i).d_port));
     std::printf("%s\n", ((!strcmp(this->H->IPv4, this->iv.ips->at(i).dst)||!strcmp(this->H->IPv6, this->iv.ips->at(i).dst_6))?(char *)"[HOST]":""));
-    this->verboInfo(&i);
+    if(!((!strcmp(this->H->IPv4, this->iv.ips->at(i).dst)||!strcmp(this->H->IPv6, this->iv.ips->at(i).dst_6))))
+      this->ipQuery(this->iv.ips->at(i).src, 1);
+    std::printf("%s", this->iv.ips->at(i).dns_name_s);
+    std::printf("%s", this->iv.ips->at(i).wai_srch_s);
+    std::printf("%s", this->iv.ips->at(i).dns_name_d);
+    std::printf("%s", this->iv.ips->at(i).wai_srch_d);
+
+    //this->verboInfo(&i);
     //std::printf("%d %s =(%d %s)> %d %s\n", this->iv.ips->at(i).src, this->iv.ips->at(i).src, this->iv.ips->at(i).proto, this->iv.ips->at(i).proto, this->iv.ips->at(i).dst, this->iv.ips->at(i).dst);
+  }
+}
+
+void getData::ipQuery(char *ip, bool d){
+  if(strlen(ip) > 0){
+
+  char *w = (char *)malloc(78), *a = (char *)malloc(48);
+
+  sprintf(a, (char *)"/bin/python3 pyscript.py %s\0", ip);
+  system(a);
+
+  FILE *R = fopen("DNS_RESOLUTION", "r");
+  if(d){
+    fscanf(R, "%s", this->iv.ips->at(this->iv.ipx).dns_name_d);
+  }else{
+    fscanf(R, "%s", this->iv.ips->at(this->iv.ipx).dns_name_s);
+  }
+  fclose(R);
+
+  sprintf(w, (char *)"(whois %s | grep OrgName | cut -d' ' -f9-) > WAI\0", ip);
+  system(w);
+
+  FILE *W = fopen("WAI", "r");
+  if(d){
+    fscanf(W, "%s", this->dr.wai_srch_d);
+  }else{
+    fscanf(W, "%s", this->dr.wai_srch_s);
+  }
+  fclose(W);
+
+  std::printf("QUERY %s\n", ip);
   }
 }
 
@@ -215,11 +272,15 @@ void getData::verboInfo(char *idx){
   std::printf("\tMAC:\t\t%s\n", this->iv.ips->at(*idx).s_eth);
   std::printf("\tResolved:\t%s\n", this->iv.ips->at(*idx).s_eth_res);
   std::printf("\tResolved(HW):\t%s\n", this->iv.ips->at(*idx).s_eth_res_oui);
+  std::printf("\tDNS Resolved:\t%s\n", this->iv.ips->at(*idx).dns_name_d);
+  std::printf("\tWhoIs Resolved:%s\n", this->iv.ips->at(*idx).wai_srch_s);
+
   std::printf("Destination\n");
   std::printf("\tIP:\t\t%s\n", (this->iv.ips->at(*idx).ip_v? this->iv.ips->at(*idx).dst_6 : this->iv.ips->at(*idx).dst));
   std::printf("\tPort:\t\t%s\n", (this->iv.ips->at(*idx).ia[0]?(this->iv.ips->at(*idx).ia[1]?this->iv.ips->at(*idx).a_src:this->iv.ips->at(*idx).src):(this->iv.ips->at(*idx).tu? this->iv.ips->at(*idx).u_d_port : this->iv.ips->at(*idx).d_port)));
   std::printf("\tMAC:\t\t%s\n", this->iv.ips->at(*idx).d_eth);
   std::printf("\tResolved:\t%s\n", this->iv.ips->at(*idx).d_eth_res);
   std::printf("\tResolved(HW):\t%s\n", this->iv.ips->at(*idx).d_eth_res_oui);
-  std::printf("DNS Resolved: %s\n", this->iv.ips->at(*idx).dns_name);
+  std::printf("\tDNS Resolved:\t%s\n", this->iv.ips->at(*idx).dns_name_d);
+  std::printf("\tWhoIs Resolved:\t%s\n", this->iv.ips->at(*idx).wai_srch_d);
 }

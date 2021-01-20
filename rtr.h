@@ -86,7 +86,13 @@ private:
     //ARP dst MAC
     char *d_a_eth = (char *)calloc('\0', 64);
     //WHOAMI search
-    char *dns_name = (char *)calloc('\0', 16);
+    char *wai_srch_s = (char *)calloc('\0', 16);
+    //DOG search
+    char *dns_name_s = (char *)calloc('\0', 32);
+    //WHOAMI search
+    char *wai_srch_d = (char *)calloc('\0', 16);
+    //DOG search
+    char *dns_name_d = (char *)calloc('\0', 32);
   }dr;
   //Information that is necessary
   struct informational_variables{
@@ -106,6 +112,8 @@ private:
   void getInfo(char *in_c_str, bool direction, char);
   //Initialize each directions object in ips vector
   void intDirc();
+  //Queries for resolution; 0=SRC, 1=DST
+  void ipQuery(char *ip_to_search, bool side_of_flow);
 public:
   //Full collection of info
   void collection();

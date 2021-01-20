@@ -10,3 +10,5 @@
 *.txt
 
 .HIDDEN
+DNS_RESOLUTION
+WAI
