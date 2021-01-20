@@ -183,11 +183,11 @@ void getData::getInfo(char *in, bool d, char btv){
       break;
     case 20:
       strcpy(this->iv.ips->at(this->iv.ipx).i_src_6, in);
-      if(in[0] > 0)this->ipQuery(this->iv.ips->at(i).dst, 1);
+      if(in[0] > 0)this->ipQuery(this->iv.ips->at(i).dst, 1);c
       break;
     case 21:
       strcpy(this->iv.ips->at(this->iv.ipx).i_dst_6, in);
-      if(in[0] > 0)this->ipQuery(this->iv.ips->at(i).dst, 1);
+      if(in[0] > 0)this->ipQuery(this->iv.ips->at(i).dst, 1);c
       break;
     }
 }
